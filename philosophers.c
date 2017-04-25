@@ -13,7 +13,6 @@ int *tried;
 int numthr;
 
 pthread_mutex_t *mutex;
-sem_t semaphore;
 
 void eating(void *id) {
     int threadId = *(int *)id;
@@ -43,9 +42,6 @@ void *dinner(void *id) {
 
     while (runnig) {
 
-        // fecha semaforo
-        sem_wait(&semaphore);
-
         // tenta lockar um talher
         if (pthread_mutex_trylock(&mutex[threadId]) == 0) {
             int previousFork = threadId - 1;
@@ -72,15 +68,11 @@ void *dinner(void *id) {
             }
         }
         else 
-            tryEating(id);
-        
-        // libera semaforo
-        sem_post(&semaphore);
+            tryEating(id);    
     }
 }
 
 int main(int argc, char **argv) {
-    //srand(time(NULL));
     pthread_t *philosopher;
     int i, runningTime;
 
@@ -101,10 +93,7 @@ int main(int argc, char **argv) {
     philosopher = (pthread_t *)malloc(numthr * sizeof(pthread_t));
     mutex = (pthread_mutex_t *)malloc(numthr * sizeof(pthread_mutex_t));
 
-    // semaforo dos garfos. -1 pq um dos garfos é compartilhado.
-    sem_init(&semaphore, 0, numthr - 1);
-
-    // um mutex para cada thread
+    // um mutex para cada garfo
     for (i = 0; i < numthr; i++) 
         pthread_mutex_init(&mutex[i], NULL);
     
